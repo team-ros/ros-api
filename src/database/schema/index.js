@@ -90,10 +90,10 @@ const ObjectModel = new mongoose.Schema({
 
 })
 
-const User = mongoose.model( "User", UserModel )
-const Object = mongoose.model( "Object", ObjectModel )
+const user = mongoose.model( "user", UserModel )
+const object = mongoose.model( "object", ObjectModel )
 
 export {
-    User,
-    Object
+    user,
+    object
 }
