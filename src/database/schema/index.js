@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import connection from '../connection'
+import { Schema } from 'mongoose'
 
 const UserModel = new mongoose.Schema({
 
