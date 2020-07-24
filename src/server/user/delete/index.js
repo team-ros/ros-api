@@ -1,6 +1,7 @@
 import express from 'express'
 import minioClient from '../../../minio/connection'
 import { user, object } from '../../../database/schema'
+import { database } from 'firebase-admin'
 const router = express.Router()
 
 router.post( "/", (req, res) => {
@@ -30,14 +31,16 @@ router.post( "/", (req, res) => {
         
                             res.json({
                                 status: true,
-                                delete: true
+                                delete: true,
+                                database: true
                             })
                         }
                         if(onrejected){
                             res.status(503)
                             res.json({
                                 status: false,
-                                delete: true
+                                delete: true,
+                                database: false
                             })
                         }
                     })

@@ -24,13 +24,15 @@ router.post( "/", (req, res) => {
                 if(onfulfilled) {
                     res.json({
                         status: true,
-                        bucket: true
+                        bucket: true,
+                        database: true
                     })
                 }
                 if(onrejected) {
                     res.json({
-                        status: true,
-                        bucket: false
+                        status: false,
+                        bucket: true,
+                        database: false
                     })
                 }
             })
