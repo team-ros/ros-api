@@ -3,7 +3,7 @@ import middleware from '../../../middleware'
 import admin from 'firebase-admin'
 const router = express.Router()
 
-router.post( "/", middleware, (req, res) => {
+router.post( "/", (req, res) => {
     let update = req.body
     
     admin.auth().updateUser(req.auth.uid, update)

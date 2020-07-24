@@ -14,6 +14,9 @@ app.use( cors() )
 // import routes
 import userRoute from './user'
 import objectRoute from './object'
+import middleware from '../middleware'
+
+app.use( middleware )
 
 // apply routes
 app.use( "/user", userRoute )
