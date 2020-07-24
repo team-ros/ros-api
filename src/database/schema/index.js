@@ -4,7 +4,7 @@ import { Schema } from 'mongoose'
 
 const UserModel = new mongoose.Schema({
 
-    _id: mongoose.Schema.Types.ObjectId,
+    // _id: mongoose.Schema.Types.ObjectId,
 
     // firebase user id
     uid: {
@@ -25,7 +25,7 @@ const UserModel = new mongoose.Schema({
 
 const ObjectModel = new mongoose.Schema({
 
-    _id: mongoose.Schema.Types.ObjectId,
+    // _id: mongoose.Schema.Types.ObjectId,
 
     // object type (file, dir)
     type: {

@@ -1,7 +1,7 @@
 import admin from "../firebase-admin/index"
 
 const middleware = (req, res, next) => {
-    let token = req.header.authorization 
+    let token = req.headers.authorization
     if (!token) {
         res.status(401)
         res.json({
@@ -12,7 +12,8 @@ const middleware = (req, res, next) => {
     else{
         admin.auth().verifyIdToken(token)
             .then(dec => {
-                res.auth = dec
+                console.log(dec)
+                req.auth = dec
                 next()
             })
             .catch(err => {

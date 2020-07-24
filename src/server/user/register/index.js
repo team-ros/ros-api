@@ -1,14 +1,14 @@
 import express from 'express'
 import minioClient from '../../../minio/connection'
-import middleware from '../../../middleware'
-import { User } from '../../../database/schema'
+import { user, object } from '../../../database/schema'
 const router = express.Router()
 
 
-router.post( "/", middleware, (req, res) => {
-    minioClient.makeBucket(req.auth.uid, "eu", (err) => {
+router.post( "/", (req, res) => {
+
+    minioClient.makeBucket(String(req.auth.uid).toLowerCase(), (err) => {
         if(err) {
-            console.log("error creating bucket")
+            console.log("error creating bucket", err)
             res.status(503)
             res.json({
                 status: false,
@@ -16,7 +16,7 @@ router.post( "/", middleware, (req, res) => {
             })
         }
         else{
-            User.create({
+            user.create({
                 uid: req.auth.uid,
                 bucket_name: req.auth.uid
             })

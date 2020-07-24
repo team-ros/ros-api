@@ -4,7 +4,8 @@ import { user, object } from '../../../database/schema'
 const router = express.Router()
 
 router.post( "/", (req, res) => {
-    minioClient.removeBucket(req.auth.uid, (err) => {
+    console.log(req)
+    minioClient.removeBucket(String(req.auth.uid).toLowerCase(), (err) => {
         if(err) {
             console.log("error deleting bucket")
             res.status(503)
@@ -14,7 +15,7 @@ router.post( "/", (req, res) => {
             })
         }
         else {
-            User.deleteOne({
+            user.deleteOne({
                 uid: req.auth.uid,
                 bucket_name: req.auth.uid
             })
