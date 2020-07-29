@@ -88,7 +88,8 @@ router.post("/*", upload.single('upload'), (req, res) => {
                                             client.index({
                                                 index: req.auth.uid.toLowerCase(),
                                                 body: {
-                                                    search: transletedString.text
+                                                    search: transletedString.text,
+                                                    object_uuid: objectName
                                                 }
                                             }).then((onfullfilled, onrejected) => {
                                                 if (onfullfilled) {
@@ -109,7 +110,8 @@ router.post("/*", upload.single('upload'), (req, res) => {
                                     client.index({
                                         index: req.auth.uid.toLowerCase(),
                                         body: {
-                                            search: data.text
+                                            search: data.text,
+                                            object_uuid: objectName
                                         }
                                     })
                                 })
@@ -121,7 +123,8 @@ router.post("/*", upload.single('upload'), (req, res) => {
                                         client.index({
                                             index: req.auth.uid.toLowerCase(),
                                             body: {
-                                                search: result.value
+                                                search: result.value,
+                                                object_uuid: objectName
                                             }
                                         })
                                     })
