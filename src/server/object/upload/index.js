@@ -1,7 +1,11 @@
 import express from 'express'
 import elastic from '@elastic/elasticsearch'
 import lodash from 'lodash'
-const client = new elastic.Client({ node: 'http://88.99.54.174:9200' })
+import translatte from 'translatte'
+import pdf from 'pdf-parse'
+import fileSystem from 'fs'
+import mammoth from 'mammoth'
+const client = new elastic.Client({ node: 'http://88.99.35.174:9200' })
 const router = express.Router()
 
 
@@ -10,6 +14,7 @@ import { v4 as uuidv4 } from 'uuid'
 import multer from 'multer'
 import minioClient from '../../../minio/connection'
 import { user, object } from '../../../database/schema'
+import { data } from '@tensorflow/tfjs-node'
 var upload = multer({ dest: '/tmp' })
 
 const cocoSsd = require('@tensorflow-models/coco-ssd');
@@ -78,21 +83,49 @@ router.post("/*", upload.single('upload'), (req, res) => {
                                         for (let i in count) {
                                             countString += count[i] + " " + i + " "
                                         }
-                                        console.log(countString)
+                                        translatte(countString, { to: "de" }).then((transletedString) => {
+                                            console.log(transletedString.text)
+                                            client.index({
+                                                index: req.auth.uid.toLowerCase(),
+                                                body: {
+                                                    search: transletedString.text
+                                                }
+                                            }).then((onfullfilled, onrejected) => {
+                                                if (onfullfilled) {
+                                                    console.log(onfullfilled)
+                                                }
+                                                if (onrejected) {
+                                                    console.log(onrejected)
+                                                }
+                                            })
+                                        })
+
+                                    })
+                            }
+                            if (req.file.mimetype == "application/pdf") {
+                                let dataBuffer = fileSystem.readFileSync(req.file.path)
+                                pdf(dataBuffer).then((data) => {
+                                    console.log(data.text)
+                                    client.index({
+                                        index: req.auth.uid.toLowerCase(),
+                                        body: {
+                                            search: data.text
+                                        }
+                                    })
+                                })
+                            }
+                            if (req.file.mimetype == "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+                                mammoth.extractRawText({ path: req.file.path })
+                                    .then(function (result) {
+                                        console.log(result.value)
                                         client.index({
-                                            index: req.auth.uid,
+                                            index: req.auth.uid.toLowerCase(),
                                             body: {
-                                                search: countString
-                                            }
-                                        }).then((onfullfilled, onrejected) => {
-                                            if(onfullfilled){
-                                                
-                                            }
-                                            if(onrejected){
-                                                
+                                                search: result.value
                                             }
                                         })
                                     })
+                                    .done();
                             }
                         }
                         if (onrejected) {
