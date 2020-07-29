@@ -4,11 +4,11 @@ const router = express.Router()
 // import routes
 import deleteRoute from './delete'
 import editRoute from './edit'
-import registerRoute from './register'
+import authenticateRoute from './authenticate'
 
 // apply routes
 router.use( "/delete", deleteRoute )
 router.use( "/edit", editRoute )
-router.use( "/register", registerRoute )
+router.use( "/authenticate", authenticateRoute )
 
 export default router
