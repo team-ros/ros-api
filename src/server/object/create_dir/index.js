@@ -1,7 +1,10 @@
 import express from 'express'
-import { object } from '../../../database/schema'
+import { user, object } from '../../../database/schema'
 import { v4 as uuidv4 } from 'uuid'
+import body_parser from 'body-parser'
 const router = express.Router()
+
+router.use(body_parser.json())
 
 router.post("/", (req, res) => {
     const objectName = uuidv4()
@@ -19,7 +22,8 @@ router.post("/", (req, res) => {
             if (onfulfilled) {
                 res.json({
                     status: true,
-                    directory: true
+                    directory: true,
+                    debug: objectName
                 })
             }
             if (onrejected) {

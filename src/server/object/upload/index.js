@@ -55,7 +55,8 @@ router.post("/*", upload.single('upload'), (req, res) => {
                                 object_uuid: objectName,
                                 object_user_path: req._parsedUrl.path,
                                 object_user_name: req.file.originalname,
-                                owner_uid: result.uid         //falsche ID
+                                owner_uid: result.uid,
+                                parent_id: req.body.parent         
                             }).then((onfullfilled, onrejected) => {
                                 if (onfullfilled) {
 
