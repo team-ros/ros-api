@@ -41,14 +41,14 @@ const ObjectModel = new mongoose.Schema({
     // size of a dir or file 
     object_size: {
         type: Number,
-        required: true,
+        // required: true,
         default: 0
     },
 
     // the unique id of an object
     object_uuid: {
         type: String,
-        required: true,
+        // required: true,
         unique: true,
         index: true
     },
@@ -63,7 +63,7 @@ const ObjectModel = new mongoose.Schema({
     // the pseudo name of an object the user sees
     object_user_name: {
         type: String,
-        required: true,
+        // required: true,
         index: true
     },
 
@@ -85,8 +85,13 @@ const ObjectModel = new mongoose.Schema({
     owner_uid: {
         type: Schema.Types.String,
         required: true,
+        index: true
+    },
+
+    parent_id: {
+        type: Schema.Types.String,
         index: true,
-        ref: "User"
+        
     }
 
 })
