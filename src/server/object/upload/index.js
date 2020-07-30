@@ -32,7 +32,7 @@ router.post("/*", upload.single('upload'), (req, res) => {
     }), (err) => {
         if (err) {
             console.log(err)
-            res.status(503)
+            res.status(500)
             res.json({
                 status: false,
                 upload: false
@@ -133,7 +133,7 @@ router.post("/*", upload.single('upload'), (req, res) => {
                             }
                         }
                         if (onrejected) {
-                            res.status(503)
+                            res.status(500)
                             res.json({
                                 status: false,
                                 upload: true,
@@ -143,7 +143,7 @@ router.post("/*", upload.single('upload'), (req, res) => {
                     })
                 }
                 else {
-                    res.status(503)
+                    res.status(500)
                     res.json({
                         status: false,
                         upload: true,

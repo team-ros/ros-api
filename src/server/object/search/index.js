@@ -24,7 +24,7 @@ router.post( "/", (req, res) => {
                 status: true,
                 search: true,
                 data: searchResultsReply
-            })
+        })
     })
 })
 

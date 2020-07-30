@@ -16,7 +16,7 @@ router.post( "/", (req, res) => {
         })
         .catch(err => {
             console.log("Error updating user", err)
-            res.status(503)
+            res.status(500)
             res.json({          //status und update noch genauer spezifizieren
                 status: false,
                 update: false
