@@ -26,8 +26,7 @@ router.post("/", (req, res) => {
                             status: false,
                             delete: false
                         })
-                    }
-                    else {
+                    } else {
                         minioClient.removeBucket(String(req.auth.uid).toLowerCase(), (err) => {
                             if (err) {
                                 console.log("error deleting bucket")
@@ -36,8 +35,7 @@ router.post("/", (req, res) => {
                                     status: false,
                                     delete: false
                                 })
-                            }
-                            else {
+                            } else {
                                 user.deleteOne({
                                     uid: req.auth.uid,
                                     bucket_name: req.auth.uid
