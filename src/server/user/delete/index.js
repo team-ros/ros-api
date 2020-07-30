@@ -8,11 +8,6 @@ router.post("/", (req, res) => {
     minioClient.bucketExists(String(req.auth.uid).toLowerCase(), (err, exists) => {
         if (err) {
             console.log("error finding bucket")
-            req.status(500)
-            req.json({
-                status: "invalid",
-                bucket: "not existing"
-            })
         }
         if (exists) {
             let objectsList = []
@@ -93,6 +88,12 @@ router.post("/", (req, res) => {
                         })
                     }
                 })
+            })
+        } else {
+            res.status(500)
+            res.json({
+                status: "invalid",
+                bucket: "not existing"
             })
         }
     })
