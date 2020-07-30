@@ -5,7 +5,11 @@ import { database } from 'firebase-admin'
 const router = express.Router()
 
 router.post( "/", (req, res) => {
-    console.log(req)
+    object.find({
+        owner_uid: req.auth.uid
+    }).then((findResult) => {
+        console.log(findResult)
+    })
     minioClient.removeBucket(String(req.auth.uid).toLowerCase(), (err) => {
         if(err) {
             console.log("error deleting bucket")

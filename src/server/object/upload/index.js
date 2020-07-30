@@ -43,6 +43,7 @@ router.post("/*", upload.single('upload'), (req, res) => {
                 uid: req.auth.uid
             }).then((result) => {
                 if (result) {
+                    console.log(result)
                     object.create({
                         type: false,
                         file_type: req.file.mimetype,
@@ -50,7 +51,7 @@ router.post("/*", upload.single('upload'), (req, res) => {
                         object_uuid: objectName,
                         object_user_path: req._parsedUrl.path,
                         object_user_name: req.file.originalname,
-                        owner_uid: result._id
+                        owner_uid: result.uid         //falsche ID
                     }).then((onfullfilled, onrejected) => {
                         if (onfullfilled) {
 

@@ -83,7 +83,7 @@ const ObjectModel = new mongoose.Schema({
 
     // the uid of the user
     owner_uid: {
-        type: Schema.Types.ObjectId,
+        type: Schema.Types.String,
         required: true,
         index: true,
         ref: "User"
