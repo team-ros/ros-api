@@ -86,12 +86,6 @@ const ObjectModel = new mongoose.Schema({
         type: Schema.Types.String,
         required: true,
         index: true
-    },
-
-    parent_id: {
-        type: Schema.Types.String,
-        index: true,
-        
     }
 
 })

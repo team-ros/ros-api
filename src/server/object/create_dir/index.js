@@ -6,7 +6,7 @@ const router = express.Router()
 
 router.use(body_parser.json())
 
-router.post("/", (req, res) => {
+router.post("/*", (req, res) => {
     const objectName = uuidv4()
     user.findOne({
         uid: req.auth.uid
@@ -16,8 +16,7 @@ router.post("/", (req, res) => {
             object_uuid: objectName,
             object_user_path: req._parsedUrl.path,
             object_user_name: req.body.folderName,
-            owner_uid: result.uid,
-            parent_id: req.body.parent
+            owner_uid: result.uid
         }).then((onfulfilled, onrejected) => {
             if (onfulfilled) {
                 res.json({
