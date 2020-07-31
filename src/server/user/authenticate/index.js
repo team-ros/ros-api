@@ -5,15 +5,27 @@ const router = express.Router()
 
 
 router.post("/", (req, res) => {
+    console.log(req.headers)
     user.findOne({
         uid: req.auth.uid
     }).then((result) => {
-        if (result) {
+        if (result && req.headers.existing_user == 'true') {
             res.json({
                 status: true,
                 login: true,
             })
-        } else {
+        } else if (result && req.headers.existing_user == 'false') {
+            res.json({
+                status: true,
+                user: "existing"
+            })
+        } else if (!result && req.headers.existing_user == 'true') {
+            res.status(200)
+            res.json({
+                status: true,
+                user: "not existing"
+            })
+        } else if (!result && req.headers.existing_user == 'false') {
             minioClient.makeBucket(String(req.auth.uid).toLowerCase(), (err) => {
                 if (err) {
                     console.log("error creating bucket", err)
@@ -46,7 +58,7 @@ router.post("/", (req, res) => {
                     })
                 }
             })
-        }
+        } 
     })
 })
 
