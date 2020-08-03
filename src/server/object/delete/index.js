@@ -1,170 +1,178 @@
 import express from 'express'
 import { user, object } from '../../../database/schema'
+import body_parser from 'body-parser'
 const router = express.Router()
-
-// import database
-import { user, object } from '../../../database/schema'
 
 // import minio client
 import minio from '../../../minio/connection'
+import minioClient from '../../../minio/connection'
 
-router.post( "/", (req, res) => {
+router.use(body_parser.json())
 
-    object.findOne({
-        owner_uid: req.auth.uid,
-        object_uuid: req.query.object_uuid
-    })
-    .then(( onfulfilled, onrejected ) => {
-        
-        if ( onfulfilled ) {
-
-            let ObjectRootPath = new RegExp( onfulfilled.object_user_path + ".*" )
-
-            object.find({
+router.post("/", (req, res) => {
+    user.findOne({
+        uid: req.auth.uid
+    }).then((onfulfilled, onrejected) => {
+        if (onfulfilled) {
+            object.findOne({
                 owner_uid: req.auth.uid,
-                oject_user_path: {
-                    $regex: ObjectRootPath
-                }
-            })
-            .then((onfulfilled, onrejected) => {
-                console.log( onfulfilled )
-
-
-                if ( onfulfilled ) {
-                    if ( onfulfilled.length > 1 ) {
-
-                        let toDeleteChildObjects = []
-                        for ( childObject of onfulfilled ) {
-                            toDeleteChildObjects.push( childObject.object_uuid )
-                        }
-
-                        minio.removeObjects( String(req.auth.uid).toLowerCase(), toDeleteChildObjects )
-                        .then((onfulfilled, onrejected) => {
-                            if( onfulfilled ) {
-
-                                toDeleteChildObjects.map(( value, index ) => {
-                                    return { 
+                object_uuid: req.body.Object_ID
+            }).then((onfulfilled, onrejected) => {
+                if (onfulfilled) {
+                    const objectToDelete = onfulfilled
+                    if (onfulfilled.type == false) {
+                        minioClient.removeObject(String(req.auth.uid).toLowerCase(), onfulfilled.object_uuid)
+                            .then((onfulfilled, onrejected) => {
+                                if (onfulfilled) {
+                                    object.deleteOne({
                                         owner_uid: req.auth.uid,
-                                        object_uuid: value
-                                    }
-                                })
+                                        object_uuid: req.body.Object_ID
+                                    }).then((onfulfilled, onrejected) => {
+                                        if (onfulfilled) {
+                                            res.json({
+                                                status: true,
+                                                delete: true
+                                            })
+                                        }
+                                        if (onrejected) {
+                                            res.status(500)
+                                            res.json({
+                                                status: false,
+                                                delete: false
+                                            })
+                                        }
+                                    })
+                                }
+                                if (onrejected) {
+                                    res.status(500)
+                                    res.json({
+                                        status: false,
+                                        delete: false
+                                    })
+                                }
+                            })
+                    } else {
+                        object.find({
+                            object_user_path: {
+                                $regex: onfulfilled.object_user_path + ".*"
+                            }
+                        }).then((onfulfilled, onrejected) => {
+                            if (onfulfilled) {
+                                
+                                let folderToDelete = []
+                                let filesToDelete = []
 
-                                object.deleteMany( toDeleteChildObjects )
-                                .then(( onfulfilled, onrejected ) => {
-                                    if( onfulfilled ) {
-                                        return res.json({
-                                            status: true,
-                                            database: true,
-                                            object: true
+                                for (let i of onfulfilled) {
+                                    let fullPath = i.object_user_path
+                                    let splittedPath = fullPath.split("/")
+
+                                    if (splittedPath.includes(objectToDelete.object_user_name)) {
+                                        if (i.type == true) {
+                                            folderToDelete.push(i)
+                                        } else {
+                                            filesToDelete.push(i)
+                                        }
+                                    }
+                                    console.log(folderToDelete)
+                                    console.log(filesToDelete.length)
+                                }
+                                if (folderToDelete.length != 0) {
+                                    for (let ii of folderToDelete) {
+                                        object.deleteOne({
+                                            owner_uid: req.auth.uid,
+                                            object_uuid: ii.object_uuid
+                                        }).then((onfulfilled, onrejected) => {
+                                            if (onrejected) {
+                                                res.status(500)
+                                                res.json({
+                                                    status: false,
+                                                    delete: false
+                                                })
+                                            }
                                         })
                                     }
-                                })
-                                .catch( err => {
-                                    res.status( 500 )
-                                    return res.json({
-                                        status: true,
-                                        database: false,
-                                        object: true
-                                    })
-                                })
-                            }
-                            if( onrejected ) {
-                                res.status( 500 )
-                                    return res.json({
-                                        status: false,
-                                        database: true,
-                                        object: false
-                                    })
-                            }
-                        })
-                        .catch( err => {
-                            res.status( 500 )
-                            return res.json({
-                                status: false,
-                                object: "invalid",
-                                database: false,
-                                debug: err
-                            })
-                        })
-                    }
-                    else {
-                        const objectName = onfulfilled[0].object_uuid
-                        minio.removeObject( String(req.auth.uid).toLowerCase(), objectName )
-                        .then((onfulfilled, onrejected) => {
-                            if( onfulfilled ) {
+                                }
+
+                                if (filesToDelete.length != 0) {
+                                    minioClient.removeObjects(String(req.auth.uid).toLowerCase(), filesToDelete)
+                                        .then((onfulfilled, onrejected) => {
+                                            if (onfulfilled) {
+                                                for (let iii of filesToDelete) {
+                                                    object.deleteOne({
+                                                        owner_uid: req.auth.uid,
+                                                        object_uuid: iii.object_uuid
+                                                    }).then((onfulfilled, onrejected) => {
+                                                        if (onrejected) {
+                                                            res.status(500)
+                                                            res.json({
+                                                                status: false,
+                                                                delete: false
+                                                            })
+                                                        }
+                                                    })
+                                                }
+                                                res.json({
+                                                    status: true,
+                                                    delete: true
+                                                })       
+                                            }
+                                            if (onrejected) {
+                                                res.status(500)
+                                                res.json({
+                                                    status: false,
+                                                    delete: false
+                                                })
+                                            }
+                                        })
+                                }
+
                                 object.deleteOne({
                                     owner_uid: req.auth.uid,
-                                    object_uuid: objectName
-                                })
-                                .then(( onfulfilled, onrejected ) => {
-                                    if( onfulfilled ) {
-                                        return res.json({
+                                    object_uuid: req.body.Object_ID
+                                }).then((onfulfilled, onrejected) => {
+                                    if (onfulfilled) {
+                                        res.json({
                                             status: true,
-                                            object: true,
-                                            database: true
+                                            delete: true
                                         })
                                     }
-                                    if( onrejected ) {
-                                        res.status( 500 )
-                                        return res.json({
+                                    if (onrejected) {
+                                        res.status(500)
+                                        res.json({
                                             status: false,
-                                            object: true,
-                                            database: false
+                                            delete: false
                                         })
                                     }
-                                })
+                                })                          
                             }
-                            if( onrejected ) {
-                                res.status( 500 )
-                                return res.json({
+
+                            if (onrejected) {
+                                res.status(500)
+                                res.json({
                                     status: false,
-                                    object: false,
-                                    database: null
+                                    delete: false
                                 })
                             }
-                        })
-                        .catch( err => {
-                            console.log( err )
-                            res.status( 500 )
-                            return res.json({
-                                status: false,
-                                object: false,
-                                database: false,
-                                debug: err
-                            })
                         })
                     }
                 }
-
-                if ( onrejected ) {
-                    return res.json({
+                if (onrejected) {
+                    res.status(404)
+                    res.json({
                         status: false,
-                        object: "invalid",
-                        database: true
+                        object: "not found"
                     })
                 }
             })
         }
-        if( onrejected ) {
-            res.status( 404 )
-            return res.json({
+        if (onrejected) {
+            res.status(404)
+            res.json({
                 status: false,
-                object: "invalid",
-                database: true
+                user: "not found"
             })
         }
     })
-    .catch( err => {
-        console.log( err )
-        res.status( 500 )
-        return res.json({
-            status: false,
-            object: null,
-            database: false,
-            debug: err
-        })
-    })
-
 })
 
 export default router
