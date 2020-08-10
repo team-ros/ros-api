@@ -86,6 +86,12 @@ const ObjectModel = new mongoose.Schema({
         type: Schema.Types.String,
         required: true,
         index: true
+    },
+
+    // uuid of the directory above
+    parent_id: {
+        type: Schema.Types.String,
+        required: true
     }
 
 })

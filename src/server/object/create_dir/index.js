@@ -11,28 +11,107 @@ router.post("/*", (req, res) => {
     user.findOne({
         uid: req.auth.uid
     }).then((result) => {
-        object.create({
+        object.find({
             type: true,
-            object_uuid: objectName,
             object_user_path: req._parsedUrl.path,
-            object_user_name: req.body.folderName,
-            owner_uid: result.uid
+            object_user_name: req.body.folderName
         }).then((onfulfilled, onrejected) => {
             if (onfulfilled) {
-                res.json({
-                    status: true,
-                    directory: true,
-                    debug: objectName
-                })
+                if (onfulfilled.length == 0) {
+                    if (req._parsedUrl.path == "/") {
+                        object.create({
+                            type: true,
+                            object_uuid: objectName,
+                            object_user_path: req._parsedUrl.path,
+                            object_user_name: req.body.folderName,
+                            owner_uid: result.uid,
+                            parent_id: "1"
+                        }).then((onfulfilled, onrejected) => {
+                            if (onfulfilled) {
+                                res.json({
+                                    status: true,
+                                    directory: true,
+                                    debug: objectName
+                                })
+                            }
+                            if (onrejected) {
+                                res.status(500)
+                                res.json({
+                                    status: false,
+                                    directory: false
+                                })
+                            }
+                        })
+                    } else {
+                        let fullPath = req._parsedUrl.path
+                        let splittedPath = fullPath.split("/")
+                        const parentName = splittedPath[splittedPath.length - 2]
+
+                        console.log(splittedPath)
+                        console.log("parentName", parentName)
+
+
+                        object.find({
+                            owner_uid: req.auth.uid,
+                            object_user_name: parentName,
+                            type: true
+                        }).then((onfullfilled, onrejected) => {
+                            if (onfullfilled) {
+                                if (onfullfilled.length == 0) {
+                                    res.status(406)
+                                    res.json({
+                                        status: false,
+                                        parent: "not existing"
+                                    })
+                                } else {
+                                    object.create({
+                                        type: true,
+                                        object_uuid: objectName,
+                                        object_user_path: req._parsedUrl.path,
+                                        object_user_name: req.body.folderName,
+                                        owner_uid: result.uid,
+                                        parent_id: onfullfilled.object_uuid
+                                    }).then((onfulfilled, onrejected) => {
+                                        if (onfulfilled) {
+                                            res.json({
+                                                status: true,
+                                                directory: true,
+                                                debug: objectName
+                                            })
+                                        }
+                                        if (onrejected) {
+                                            res.status(500)
+                                            res.json({
+                                                status: false,
+                                                directory: false
+                                            })
+                                        }
+                                    })
+                                }
+                            }
+                            if (onrejected) {
+                                res.status(500)
+                                res.json({
+                                    status: false,
+                                    directory: false
+                                })
+                            }
+                        })
+                    }
+                } else {
+                    res.status(406)
+                    res.json({
+                        status: false,
+                        directory: "existing"
+                    })
+                }
             }
             if (onrejected) {
-                res.status(500)
-                res.json({
-                    status: false,
-                    directory: false
-                })
+
             }
+
         })
+        // 
     })
 })
 

@@ -48,103 +48,230 @@ router.post("/*", upload.single('upload'), (req, res) => {
                     }).then((result) => {
                         if (result) {
                             console.log(result)
-                            object.create({
-                                type: false,
-                                file_type: req.file.mimetype,
-                                object_size: req.file.size,
-                                object_uuid: objectName,
-                                object_user_path: req._parsedUrl.path,
-                                object_user_name: req.file.originalname,
-                                owner_uid: result.uid        
-                            }).then((onfullfilled, onrejected) => {
-                                if (onfullfilled) {
-
-                                    res.json({
-                                        status: true,
-                                        upload: true,
-                                        database: true
-                                    })
-                                    if (req.file.mimetype.startsWith("image")) {
-                                        Promise.all([cocoSsd.load(), fs.readFile(req.file.path)])
-                                            .then((results) => {
-                                                // First result is the COCO-SSD model object.
-                                                const model = results[0];
-                                                // Second result is image buffer.
-                                                const imgTensor = tf.node.decodeImage(new Uint8Array(results[1]), 3);
-                                                // Call detect() to run inference.
-                                                return model.detect(imgTensor);
-                                            })
-                                            .then((predictions) => {
-                                                let results = predictions
-                                                let resultValues = []
-                                                for (let value of results) {
-                                                    resultValues.push(value.class)
-                                                }
-                                                let count = {};
-                                                resultValues.forEach(function (i) { count[i] = (count[i] || 0) + 1; });
-                                                console.log(resultValues)
-                                                console.log(count)
-                                                let countString = ""
-                                                for (let i in count) {
-                                                    countString += count[i] + " " + i + " "
-                                                }
-                                                translatte(countString, { to: "de" }).then((transletedString) => {
-                                                    console.log(transletedString.text)
-                                                    client.index({
-                                                        index: req.auth.uid.toLowerCase(),
-                                                        body: {
-                                                            search: transletedString.text,
-                                                            object_uuid: objectName
-                                                        }
-                                                    }).then((onfullfilled, onrejected) => {
-                                                        if (onfullfilled) {
-                                                            console.log(onfullfilled)
-                                                        }
-                                                        if (onrejected) {
-                                                            console.log(onrejected)
-                                                        }
-                                                    })
-                                                })
-
-                                            })
-                                    }
-                                    if (req.file.mimetype == "application/pdf") {
-                                        let dataBuffer = fileSystem.readFileSync(req.file.path)
-                                        pdf(dataBuffer).then((data) => {
-                                            console.log(data.text)
-                                            client.index({
-                                                index: req.auth.uid.toLowerCase(),
-                                                body: {
-                                                    search: data.text,
-                                                    object_uuid: objectName
-                                                }
-                                            })
+                            if (req._parsedUrl.path == "/") {
+                                console.log("fullpath == /")
+                                object.create({
+                                    type: false,
+                                    file_type: req.file.mimetype,
+                                    object_size: req.file.size,
+                                    object_uuid: objectName,
+                                    object_user_path: req._parsedUrl.path,
+                                    object_user_name: req.file.originalname,
+                                    owner_uid: result.uid,
+                                    parent_id: "1"        
+                                }).then((onfullfilled, onrejected) => {
+                                    if (onfullfilled) {
+    
+                                        res.json({
+                                            status: true,
+                                            upload: true,
+                                            database: true
                                         })
-                                    }
-                                    if (req.file.mimetype == "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-                                        mammoth.extractRawText({ path: req.file.path })
-                                            .then(function (result) {
-                                                console.log(result.value)
+                                        if (req.file.mimetype.startsWith("image")) {
+                                            Promise.all([cocoSsd.load(), fs.readFile(req.file.path)])
+                                                .then((results) => {
+                                                    // First result is the COCO-SSD model object.
+                                                    const model = results[0];
+                                                    // Second result is image buffer.
+                                                    const imgTensor = tf.node.decodeImage(new Uint8Array(results[1]), 3);
+                                                    // Call detect() to run inference.
+                                                    return model.detect(imgTensor);
+                                                })
+                                                .then((predictions) => {
+                                                    let results = predictions
+                                                    let resultValues = []
+                                                    for (let value of results) {
+                                                        resultValues.push(value.class)
+                                                    }
+                                                    let count = {};
+                                                    resultValues.forEach(function (i) { count[i] = (count[i] || 0) + 1; });
+                                                    console.log(resultValues)
+                                                    console.log(count)
+                                                    let countString = ""
+                                                    for (let i in count) {
+                                                        countString += count[i] + " " + i + " "
+                                                    }
+                                                    translatte(countString, { to: "de" }).then((transletedString) => {
+                                                        console.log(transletedString.text)
+                                                        client.index({
+                                                            index: req.auth.uid.toLowerCase(),
+                                                            body: {
+                                                                search: transletedString.text,
+                                                                object_uuid: objectName
+                                                            }
+                                                        }).then((onfullfilled, onrejected) => {
+                                                            if (onfullfilled) {
+                                                                console.log(onfullfilled)
+                                                            }
+                                                            if (onrejected) {
+                                                                console.log(onrejected)
+                                                            }
+                                                        })
+                                                    })
+    
+                                                })
+                                        }
+                                        if (req.file.mimetype == "application/pdf") {
+                                            let dataBuffer = fileSystem.readFileSync(req.file.path)
+                                            pdf(dataBuffer).then((data) => {
+                                                console.log(data.text)
                                                 client.index({
                                                     index: req.auth.uid.toLowerCase(),
                                                     body: {
-                                                        search: result.value,
+                                                        search: data.text,
                                                         object_uuid: objectName
                                                     }
                                                 })
                                             })
-                                            .done();
+                                        }
+                                        if (req.file.mimetype == "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+                                            mammoth.extractRawText({ path: req.file.path })
+                                                .then(function (result) {
+                                                    console.log(result.value)
+                                                    client.index({
+                                                        index: req.auth.uid.toLowerCase(),
+                                                        body: {
+                                                            search: result.value,
+                                                            object_uuid: objectName
+                                                        }
+                                                    })
+                                                })
+                                                .done();
+                                        }
                                     }
-                                }
-                                if (onrejected) {
-                                    res.status(500)
-                                    res.json({
-                                        status: false,
-                                        upload: true,
-                                        database: false,
-                                    })
-                                }
-                            })
+                                    if (onrejected) {
+                                        res.status(500)
+                                        res.json({
+                                            status: false,
+                                            upload: true,
+                                            database: false,
+                                        })
+                                    }
+                                })
+                            } else {
+                                let fullPath = req._parsedUrl.path
+                                let splittedPath = fullPath.split("/")
+                                const parentName = splittedPath[splittedPath.length - 2]
+                                console.log(splittedPath)
+                                console.log("parentName", parentName)
+
+                                object.findOne({
+                                    owner_uid: req.auth.uid,
+                                    object_user_name: parentName,
+                                    type: true
+                                }).then((onfullfilled, onrejected) => {
+                                    if (onfullfilled) {
+                                            object.create({
+                                                type: false,
+                                                file_type: req.file.mimetype,
+                                                object_size: req.file.size,
+                                                object_uuid: objectName,
+                                                object_user_path: req._parsedUrl.path,
+                                                object_user_name: req.file.originalname,
+                                                owner_uid: result.uid,
+                                                parent_id: onfullfilled.object_uuid     
+                                            }).then((onfullfilled, onrejected) => {
+                                                if (onfullfilled) {       
+                                                    res.json({
+                                                        status: true,
+                                                        upload: true,
+                                                        database: true
+                                                    })
+                                                    if (req.file.mimetype.startsWith("image")) {
+                                                        Promise.all([cocoSsd.load(), fs.readFile(req.file.path)])
+                                                            .then((results) => {
+                                                                // First result is the COCO-SSD model object.
+                                                                const model = results[0];
+                                                                // Second result is image buffer.
+                                                                const imgTensor = tf.node.decodeImage(new Uint8Array(results[1]), 3);
+                                                                // Call detect() to run inference.
+                                                                return model.detect(imgTensor);
+                                                            })
+                                                            .then((predictions) => {
+                                                                let results = predictions
+                                                                let resultValues = []
+                                                                for (let value of results) {
+                                                                    resultValues.push(value.class)
+                                                                }
+                                                                let count = {};
+                                                                resultValues.forEach(function (i) { count[i] = (count[i] || 0) + 1; });
+                                                                console.log(resultValues)
+                                                                console.log(count)
+                                                                let countString = ""
+                                                                for (let i in count) {
+                                                                    countString += count[i] + " " + i + " "
+                                                                }
+                                                                translatte(countString, { to: "de" }).then((transletedString) => {
+                                                                    console.log(transletedString.text)
+                                                                    client.index({
+                                                                        index: req.auth.uid.toLowerCase(),
+                                                                        body: {
+                                                                            search: transletedString.text,
+                                                                            object_uuid: objectName
+                                                                        }
+                                                                    }).then((onfullfilled, onrejected) => {
+                                                                        if (onfullfilled) {
+                                                                            console.log(onfullfilled)
+                                                                        }
+                                                                        if (onrejected) {
+                                                                            console.log(onrejected)
+                                                                        }
+                                                                    })
+                                                                })
+                
+                                                            })
+                                                    }
+                                                    if (req.file.mimetype == "application/pdf") {
+                                                        let dataBuffer = fileSystem.readFileSync(req.file.path)
+                                                        pdf(dataBuffer).then((data) => {
+                                                            console.log(data.text)
+                                                            client.index({
+                                                                index: req.auth.uid.toLowerCase(),
+                                                                body: {
+                                                                    search: data.text,
+                                                                    object_uuid: objectName
+                                                                }
+                                                            })
+                                                        })
+                                                    }
+                                                    if (req.file.mimetype == "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+                                                        mammoth.extractRawText({ path: req.file.path })
+                                                            .then(function (result) {
+                                                                console.log(result.value)
+                                                                client.index({
+                                                                    index: req.auth.uid.toLowerCase(),
+                                                                    body: {
+                                                                        search: result.value,
+                                                                        object_uuid: objectName
+                                                                    }
+                                                                })
+                                                            })
+                                                            .done();
+                                                    }
+                                                }
+                                                if (onrejected) {
+                                                    res.status(500)
+                                                    res.json({
+                                                        status: false,
+                                                        upload: true,
+                                                        database: false,
+                                                    })
+                                                }
+                                            })
+                                        
+                                    }
+                                    if (onfullfilled == null) {
+                                        res.status(406)
+                                        res.json({
+                                            status: false,
+                                            parent: "not existing"
+                                        })
+                                    }
+                                    if (onrejected) {
+                                        console.log(onrejected)
+                                    }
+                                })
+                            }
                         } else {
                             res.status(500)
                             res.json({
