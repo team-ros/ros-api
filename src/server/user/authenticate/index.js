@@ -10,10 +10,25 @@ router.post("/", (req, res) => {
         uid: req.auth.uid
     }).then((result) => {
         if (result && req.headers.existing_user == 'true') {
-            res.json({
-                status: true,
-                login: true,
-                data: req.auth
+            object.find({
+                owner_uid: req.auth.uid
+            }).then((onfulfilled, onrejected) => {
+                if (onfulfilled) {
+                    res.json({
+                        status: true,
+                        login: true,
+                        user_data: req.auth,
+                        storage_data: onfulfilled
+                    })
+                    if (onrejected) {
+                        res.status(500)
+                        res.json({
+                            status: false,
+                            login: true,
+                            storage: false
+                        })
+                    }
+                }
             })
         } else if (result && req.headers.existing_user == 'false') {
             res.json({
@@ -45,7 +60,8 @@ router.post("/", (req, res) => {
                             res.json({
                                 status: true,
                                 bucket: true,
-                                database: true
+                                database: true,
+                                user_data: req.auth
                             })
                         }
                         if (onrejected) {
@@ -59,7 +75,7 @@ router.post("/", (req, res) => {
                     })
                 }
             })
-        } 
+        }
     })
 })
 
