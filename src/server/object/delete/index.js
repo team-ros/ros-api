@@ -53,8 +53,8 @@ router.post("/", (req, res) => {
                             })
                     } else {
                         object.find({
-                            object_user_path: {
-                                $regex: onfulfilled.object_user_path + ".*"
+                            object_path: {
+                                $regex: onfulfilled.object_path + ".*"
                             }
                         }).then((onfulfilled, onrejected) => {
                             if (onfulfilled) {
@@ -63,19 +63,20 @@ router.post("/", (req, res) => {
                                 let filesToDelete = []
 
                                 for (let i of onfulfilled) {
-                                    let fullPath = i.object_user_path
+                                    let fullPath = i.object_path
                                     let splittedPath = fullPath.split("/")
 
-                                    if (splittedPath.includes(objectToDelete.object_user_name)) {
+                                    if (splittedPath.includes(objectToDelete.object_uuid)) {
                                         if (i.type == true) {
                                             folderToDelete.push(i)
                                         } else {
                                             filesToDelete.push(i)
                                         }
                                     }
-                                    console.log(folderToDelete)
-                                    console.log(filesToDelete.length)
                                 }
+                                console.log(folderToDelete)
+                                console.log(filesToDelete)
+
                                 if (folderToDelete.length != 0) {
                                     for (let ii of folderToDelete) {
                                         object.deleteOne({
@@ -94,9 +95,12 @@ router.post("/", (req, res) => {
                                 }
 
                                 if (filesToDelete.length != 0) {
+                                    console.log("deletecall")
                                     minioClient.removeObjects(String(req.auth.uid).toLowerCase(), filesToDelete)
-                                        .then((onfulfilled, onrejected) => {
+                                        .then((result) => {
+                                            console.log(result)
                                             if (onfulfilled) {
+                                                console.log("onfulfilled")
                                                 for (let iii of filesToDelete) {
                                                     object.deleteOne({
                                                         owner_uid: req.auth.uid,
@@ -110,11 +114,7 @@ router.post("/", (req, res) => {
                                                             })
                                                         }
                                                     })
-                                                }
-                                                res.json({
-                                                    status: true,
-                                                    delete: true
-                                                })       
+                                                }     
                                             }
                                             if (onrejected) {
                                                 res.status(500)

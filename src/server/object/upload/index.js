@@ -49,12 +49,12 @@ router.post("/*", upload.single('upload'), (req, res) => {
                         if (result) {
                             console.log(result)
                             if (req._parsedUrl.path == "/") {
-                                console.log("fullpath == /")
                                 object.create({
                                     type: false,
                                     file_type: req.file.mimetype,
                                     object_size: req.file.size,
                                     object_uuid: objectName,
+                                    object_path: "/",
                                     object_user_path: req._parsedUrl.path,
                                     object_user_name: req.file.originalname,
                                     owner_uid: result.uid,
@@ -166,6 +166,7 @@ router.post("/*", upload.single('upload'), (req, res) => {
                                                 file_type: req.file.mimetype,
                                                 object_size: req.file.size,
                                                 object_uuid: objectName,
+                                                object_path: onfullfilled.object_path + onfullfilled.object_uuid + "/",
                                                 object_user_path: req._parsedUrl.path,
                                                 object_user_name: req.file.originalname,
                                                 owner_uid: result.uid,

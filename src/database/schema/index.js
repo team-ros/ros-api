@@ -53,6 +53,11 @@ const ObjectModel = new mongoose.Schema({
         index: true
     },
 
+    object_path: {
+        type: String,
+        required: true
+    },
+    
     // the pseudo path to an object the user sees
     object_user_path: {
         type: String,

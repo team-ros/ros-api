@@ -13,16 +13,17 @@ router.post("/", (req, res) => {
             res.json({
                 status: true,
                 login: true,
+                data: req.auth
             })
         } else if (result && req.headers.existing_user == 'false') {
             res.json({
-                status: true,
+                status: false,
                 user: "existing"
             })
         } else if (!result && req.headers.existing_user == 'true') {
             res.status(200)
             res.json({
-                status: true,
+                status: false,
                 user: "not existing"
             })
         } else if (!result && req.headers.existing_user == 'false') {

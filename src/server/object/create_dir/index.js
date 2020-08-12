@@ -22,6 +22,7 @@ router.post("/*", (req, res) => {
                         object.create({
                             type: true,
                             object_uuid: objectName,
+                            object_path: "/",
                             object_user_path: req._parsedUrl.path,
                             object_user_name: req.body.folderName,
                             owner_uid: result.uid,
@@ -51,13 +52,14 @@ router.post("/*", (req, res) => {
                         console.log("parentName", parentName)
 
 
-                        object.find({
+                        object.findOne({
                             owner_uid: req.auth.uid,
                             object_user_name: parentName,
                             type: true
-                        }).then((onfullfilled, onrejected) => {
-                            if (onfullfilled) {
-                                if (onfullfilled.length == 0) {
+                        }).then((onfulfilled, onrejected) => {
+                            if (onfulfilled) {
+                                console.log(onfulfilled)
+                                if (onfulfilled == null) {
                                     res.status(406)
                                     res.json({
                                         status: false,
@@ -67,10 +69,11 @@ router.post("/*", (req, res) => {
                                     object.create({
                                         type: true,
                                         object_uuid: objectName,
+                                        object_path: onfulfilled.object_path + onfulfilled.object_uuid + "/",
                                         object_user_path: req._parsedUrl.path,
                                         object_user_name: req.body.folderName,
                                         owner_uid: result.uid,
-                                        parent_id: onfullfilled.object_uuid
+                                        parent_id: onfulfilled.object_uuid
                                     }).then((onfulfilled, onrejected) => {
                                         if (onfulfilled) {
                                             res.json({
