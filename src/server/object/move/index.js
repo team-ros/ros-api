@@ -11,124 +11,59 @@ router.post("/", (req, res) => {
         uid: req.auth.uid
     }).then((onfulfilled, onrejected) => {
         if (onfulfilled) {
-            object.findOne({
+            object.findOne({ //get the object we want to modify
                 object_uuid: req.body.Object_ID
-            }).then((onfulfilled, onrejected) => { //check if newName is already set
+            }).then((onfulfilled, onrejected) => { 
                 if (onfulfilled) {
-                    if (onfulfilled.type == true) {
+                    
+                    if (onfulfilled.type == true) { //check if object is file or directory (in this case its a directory)
+                        const oldUserPath = onfulfilled.object_user_path
+                        const uuidPath = onfulfilled.object_path
+                        const oldName = onfulfilled.object_user_name
+                        const uuid = onfulfilled.object_uuid
                         if (onfulfilled.object_user_name != req.body.Name) {
-                            object.find({
+                            object.find({ //check if new name is already set
                                 owner_uid: req.auth.uid,
                                 object_user_name: req.body.Name
                             }).then((onfulfilled, onrejected) => {
                                 if (onfulfilled) {
-                                    if (onfulfilled.length == 0) {
-                                        if (onfulfilled.object_user_path == req.body.Path) {
-                                            const oldPath = onfulfilled.object_user_path
-                                            const oldName = onfulfilled.object_user_name
+                                    if (onfulfilled.length == 0) { //new name is available
+
+                                        if (oldUserPath == req.body.Path) { //object is not getting moved
+                                            
+
                                             let check = new RegExp("^(/[^/ ]*)+/?$")
-                                            if (check.test(req.body.Path)) {
-                                                object.updateOne({
+                                            if (check.test(req.body.Path)) { //check if sent path is valid
+                                                object.updateOne({ //update the main object
                                                     object_uuid: req.body.Object_ID
                                                 },
-                                                    {
-                                                        object_user_path: req.body.Path,
-                                                        object_user_name: req.body.Name
-                                                    }).then((onfulfilled, onrejected) => {
-                                                        if (onfulfilled) {
-                                                            const mainObject = onfulfilled
-                                                            object.find({
-                                                                object_user_path: {
-                                                                    $regex: oldPath + ".*"
-                                                                }
-                                                            }).then((ObjectToUpdate) => {
-                                                                for (let i of ObjectToUpdate) {
-                                                                    let fullPath = i.object_user_path
-                                                                    let splittedPath = fullPath.split("/")
-
-                                                                    if (splittedPath.includes(oldName)) {
-                                                                        splittedPath[splittedPath.indexOf(oldName)] = req.body.Name
-                                                                    }
-
-                                                                    fullPath = splittedPath.join("/")
-
-
-                                                                    object.updateOne(i, {
-                                                                        object_user_path: fullPath
-                                                                    }).then((onfulfilled, onrejected) => {
-                                                                        if (onrejected) {
-                                                                            res.status(500)
-                                                                            res.json({
-                                                                                status: false,
-                                                                                move: false
-                                                                            })
-                                                                        }
-                                                                    })
-                                                                }
-
-                                                                object.update({
-                                                                    owner_uid: req.auth.uid,
-                                                                    object_uuid: mainObject.object_uuid,
-                                                                    object_user_name: req.body.Name
-                                                                }).then((onfulfilled, onrejected) => {
-                                                                    if (onfulfilled) {
-                                                                        res.json({
-                                                                            status: true,
-                                                                            move: true
-                                                                        })
-                                                                    }
-                                                                    if (onrejected) {
-                                                                        res.status(500)
-                                                                        res.json({
-                                                                            status: false,
-                                                                            move: false
-                                                                        })
-                                                                    }
-                                                                })
-                                                            })
-                                                        }
-                                                        if (onrejected) {
-                                                            res.status(500)
-                                                            res.json({
-                                                                status: false,
-                                                                move: false
-                                                            })
-                                                        }
-                                                    })
-                                            }
-                                        }
-                                    } else { //renamed and moved directory & todo: wenn der selbe name mehrmals im pfad enthalten ist /Docs/Schule/bysy/uebungen/bsys
-                                        const oldPath = onfulfilled.object_user_path
-                                        const oldName = onfulfilled.object_user_name
-                                        let check = new RegExp("^(/[^/ ]*)+/?$")
-                                        if (check.test(req.body.Path)) {
-                                            object.updateOne({
-                                                object_uuid: req.body.Object_ID
-                                            },
                                                 {
-                                                    object_user_path: req.body.Path,
                                                     object_user_name: req.body.Name
                                                 }).then((onfulfilled, onrejected) => {
                                                     if (onfulfilled) {
-                                                        const mainObject = onfulfilled
+                                                        console.log(onfulfilled)
                                                         object.find({
-                                                            object_user_path: {
-                                                                $regex: oldPath + ".*"
+                                                            object_path: {
+                                                                $regex: uuidPath + ".*"
                                                             }
                                                         }).then((ObjectToUpdate) => {
+                                                            console.log(ObjectToUpdate)
                                                             for (let i of ObjectToUpdate) {
-                                                                let fullPath = i.object_user_path
-                                                                let splittedPath = fullPath.split("/")
+                                                                let fullUserPath = i.object_user_path
+                                                                let fullUUIDPath = i.object_path
+                                                                let splittedUserPath = fullUserPath.split("/")
+                                                                let splittedUUIDPath = fullUUIDPath.split("/")
 
-                                                                if (splittedPath.includes(oldName)) {
-                                                                    splittedPath[splittedPath.indexOf(oldName)] = req.body.Name
+                                                                if (splittedUUIDPath.includes(uuid)) {
+                                                                    splittedUserPath[splittedUUIDPath.indexOf(uuid)] = req.body.Name
                                                                 }
 
-                                                                fullPath = splittedPath.join("/")
+                                                                fullUserPath = splittedUserPath.join("/")
+                                                                fullUUIDPath = splittedUUIDPath.join("/")
 
 
                                                                 object.updateOne(i, {
-                                                                    object_user_path: fullPath
+                                                                    object_user_path: fullUserPath
                                                                 }).then((onfulfilled, onrejected) => {
                                                                     if (onrejected) {
                                                                         res.status(500)
@@ -139,26 +74,10 @@ router.post("/", (req, res) => {
                                                                     }
                                                                 })
                                                             }
-
-                                                            object.update({
-                                                                owner_uid: req.auth.uid,
-                                                                object_uuid: mainObject.object_uuid,
-                                                                object_user_name: req.body.Name
-                                                            }).then((onfulfilled, onrejected) => {
-                                                                if (onfulfilled) {
-                                                                    res.json({
-                                                                        status: true,
-                                                                        move: true
-                                                                    })
-                                                                }
-                                                                if (onrejected) {
-                                                                    res.status(500)
-                                                                    res.json({
-                                                                        status: false,
-                                                                        move: false
-                                                                    })
-                                                                }
-                                                            })
+                                                        })
+                                                        res.json({
+                                                            status: true,
+                                                            move: true
                                                         })
                                                     }
                                                     if (onrejected) {
@@ -169,8 +88,9 @@ router.post("/", (req, res) => {
                                                         })
                                                     }
                                                 })
+                                            }
                                         }
-                                    }
+                                    } 
                                 }
                                 if (onrejected) {
                                     res.status(500)
@@ -181,114 +101,8 @@ router.post("/", (req, res) => {
                                 }
                             })
                             //check if there are multiple entrys with the same name first
-                            if (onfulfilled.object_user_path == req.body.Path) {
-                                const oldPath = onfulfilled.object_user_path
-                                const oldName = onfulfilled.object_user_name
-                                let check = new RegExp("^(/[^/ ]*)+/?$")
-                                if (check.test(req.body.Path)) {
-                                    object.updateOne({
-                                        object_uuid: req.body.Object_ID
-                                    },
-                                        {
-                                            object_user_path: req.body.Path,
-                                            object_user_name: req.body.Name
-                                        }).then((onfulfilled, onrejected) => {
-                                            if (onfulfilled) {
-                                                const mainObject = onfulfilled
-                                                object.find({
-                                                    object_user_path: {
-                                                        $regex: oldPath + ".*"
-                                                    }
-                                                }).then((ObjectToUpdate) => {
-                                                    for (let i of ObjectToUpdate) {
-                                                        let fullPath = i.object_user_path
-                                                        let splittedPath = fullPath.split("/")
-
-                                                        if (splittedPath.includes(oldName)) {
-                                                            splittedPath[splittedPath.indexOf(oldName)] = req.body.Name
-                                                        }
-
-                                                        fullPath = splittedPath.join("/")
-
-
-                                                        object.updateOne(i, {
-                                                            object_user_path: fullPath
-                                                        }).then((onfulfilled, onrejected) => {
-                                                            if (onrejected) {
-                                                                res.status(500)
-                                                                res.json({
-                                                                    status: false,
-                                                                    move: false
-                                                                })
-                                                            }
-                                                        })
-                                                    }
-
-                                                    object.update({
-                                                        owner_uid: req.auth.uid,
-                                                        object_uuid: mainObject.object_uuid,
-                                                        object_user_name: req.body.Name
-                                                    }).then((onfulfilled, onrejected) => {
-                                                        if (onfulfilled) {
-                                                            res.json({
-                                                                status: true,
-                                                                move: true
-                                                            })
-                                                        }
-                                                        if (onrejected) {
-                                                            res.status(500)
-                                                            res.json({
-                                                                status: false,
-                                                                move: false
-                                                            })
-                                                        }
-                                                    })
-                                                })
-                                            }
-                                            if (onrejected) {
-                                                res.status(500)
-                                                res.json({
-                                                    status: false,
-                                                    move: false
-                                                })
-                                            }
-                                        })
-                                } else {
-
-                                }
-                            } else {
-
-                            }
                         }
-                    } else if (onfulfilled.type == false) {
-                        object.update({
-                            owner_uid: req.auth.uid,
-                            object_uuid: onfulfilled.object_uuid,
-                            object_user_name: req.body.Name,
-                            object_user_path: req.body.Path
-                        }).then((onfulfilled, onrejected) => {
-                            if (onfulfilled) {
-                                res.json({
-                                    status: true,
-                                    move: true
-                                })
-                            }
-                            if (onrejected) {
-                                res.status(500)
-                                res.json({
-                                    status: false,
-                                    move: false
-                                })
-                            }
-                        })
-
-                    } else {
-                        res.status(500)
-                        res.json({
-                            status: false,
-                            Path: "invalid"
-                        })
-                    }
+                    } 
                 }
                 if (onrejected) {
                     res.status(404)
