@@ -1,5 +1,5 @@
 # The latest lts image of node
-FROM node:lts-alpine
+FROM node:latest
 
 # Creates the working directory
 WORKDIR /usr/src/app
