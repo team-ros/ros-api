@@ -6,7 +6,8 @@
   "scripts": {
     "build": "babel ./src --out-dir ./lib",
     "start": "node ./lib",
-    "test": "npm run build && npm start"
+    "test": "npm run build && npm start",
+    "rebuild-tfjs": "npm rebuild @tensorflow/tfjs-node build-addon-from-source"
   },
   "repository": {
     "type": "git",
