@@ -13,7 +13,7 @@
     "type": "git",
     "url": "git+https://github.com/team-ros/ros-api.git"
   },
-  "keywords": [],
+  "keywords": [ "ROS-API" ],
   "authors": [
     "Alexander Gauss",
     "Jovan Stojimirovic"
