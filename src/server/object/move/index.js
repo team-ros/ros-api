@@ -73,9 +73,23 @@ router.post("/", (req, res) => {
                                                                     })
                                                                 }
                                                             })
-                                                            res.json({
-                                                                status: true,
-                                                                move: true
+                                                            object.find({
+                                                                owner_uid: req.auth.uid
+                                                            }).then((onfulfilled, onrejected) => {
+                                                                if (onfulfilled) {                                                      
+                                                                    res.json({
+                                                                        status: true,
+                                                                        move: true,
+                                                                        storage_data: onfulfilled
+                                                                    })
+                                                                }   
+                                                                if (onrejected) {
+                                                                    res.status(500)
+                                                                    res.json({
+                                                                        status: false,
+                                                                        move: true
+                                                                    })
+                                                                }
                                                             })
                                                         }
                                                         if (onrejected) {
@@ -116,6 +130,7 @@ router.post("/", (req, res) => {
                                                         console.log(onfulfilled)
                                                         const newParentUUID = onfulfilled.object_uuid
                                                         const newUUIDPath = onfulfilled.object_path + newParentUUID
+                                                        const newParentPath = onfulfilled.object_user_path + onfulfilled.object_user_name
                                                         console.log(uuidPath)
                                                         object.updateOne({ //update the main object
                                                             object_uuid: req.body.Object_ID
@@ -145,19 +160,19 @@ router.post("/", (req, res) => {
                                                                         console.log("for i")
                                                                         console.log(splittedUUIDPath)
                                                                         console.log(splittedUserPath)
-                                                                        if (splittedUUIDPath.includes(uuid)) {
-                                                                            //path to transfer
-                                                                            splittedUserPath.splice(splittedUUIDPath.indexOf(newParentUUID) + 1, splittedUUIDPath.indexOf(uuid) - 2)
-                                                                            splittedUUIDPath.splice(splittedUUIDPath.indexOf(newParentUUID) + 1, splittedUUIDPath.indexOf(uuid) - 2)
+                                                                        // if (splittedUUIDPath.includes(uuid)) {
+                                                                            //nested paths
+                                                                            splittedUserPath.splice(0, splittedUUIDPath.indexOf(uuid))
+                                                                            splittedUUIDPath.splice(0, splittedUUIDPath.indexOf(uuid))
                                                                             splittedUserPath.splice(splittedUUIDPath.indexOf(uuid), 1, req.body.Name)
 
                                                                             
-                                                                        }
+                                                                        // }
 
                                                                         
 
-                                                                        fullUUIDPath = splittedUUIDPath.join("/")
-                                                                        fullUserPath = splittedUserPath.join("/")
+                                                                        fullUUIDPath = newUUIDPath + "/" + splittedUUIDPath.join("/")
+                                                                        fullUserPath = newParentPath + "/" + splittedUserPath.join("/")
 
 
                                                                         object.updateOne(i, {
@@ -174,9 +189,23 @@ router.post("/", (req, res) => {
                                                                         })
                                                                         }
                                                                     }
-                                                                    res.json({
-                                                                        status: true,
-                                                                        move: true
+                                                                    object.find({
+                                                                        owner_uid: req.auth.uid
+                                                                    }).then((onfulfilled, onrejected) => {
+                                                                        if (onfulfilled) {                                                      
+                                                                            res.json({
+                                                                                status: true,
+                                                                                move: true,
+                                                                                storage_data: onfulfilled
+                                                                            })
+                                                                        }   
+                                                                        if (onrejected) {
+                                                                            res.status(500)
+                                                                            res.json({
+                                                                                status: false,
+                                                                                move: true
+                                                                            })
+                                                                        }
                                                                     })
                                                                 } else {
                                                                     res.json({
@@ -226,7 +255,6 @@ router.post("/", (req, res) => {
                                     })
                                 }
                             })
-                            //check if there are multiple entrys with the same name first
                         }
                     }
                 }

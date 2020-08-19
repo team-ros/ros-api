@@ -29,9 +29,24 @@ router.post("/", (req, res) => {
                                         object_uuid: req.body.Object_ID
                                     }).then((onfulfilled, onrejected) => {
                                         if (onfulfilled) {
-                                            res.json({
-                                                status: true,
-                                                delete: true
+                                            console.log("onfulfilled")
+                                            object.find({
+                                                owner_uid: req.auth.uid
+                                            }).then((onfulfilled, onrejected) => {
+                                                if (onfulfilled) {                                                      
+                                                    res.json({
+                                                        status: true,
+                                                        delete: true,
+                                                        storage_data: onfulfilled
+                                                    })
+                                                }   
+                                                if (onrejected) {
+                                                    res.status(500)
+                                                    res.json({
+                                                        status: false,
+                                                        delete: true
+                                                    })
+                                                }
                                             })
                                         }
                                         if (onrejected) {
@@ -131,9 +146,23 @@ router.post("/", (req, res) => {
                                     object_uuid: req.body.Object_ID
                                 }).then((onfulfilled, onrejected) => {
                                     if (onfulfilled) {
-                                        res.json({
-                                            status: true,
-                                            delete: true
+                                        object.find({
+                                            owner_uid: req.auth.uid
+                                        }).then((onfulfilled, onrejected) => {
+                                            if (onfulfilled) {                                                      
+                                                res.json({
+                                                    status: true,
+                                                    delete: true,
+                                                    storage_data: onfulfilled
+                                                })
+                                            }   
+                                            if (onrejected) {
+                                                res.status(500)
+                                                res.json({
+                                                    status: false,
+                                                    delete: true
+                                                })
+                                            }
                                         })
                                     }
                                     if (onrejected) {
