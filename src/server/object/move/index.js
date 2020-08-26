@@ -124,7 +124,6 @@ router.post("/", (req, res) => {
                                                     object_user_name: parentName
                                                 }).then((onfulfilled, onrejected) => {
                                                     if (onfulfilled) {
-                                                        if (!onfulfilled.object_path.includes(uuid) || !onfulfilled.object_uuid == uuid) {
                                                             console.log(onfulfilled)
                                                             const newParentUUID = onfulfilled.object_uuid
                                                             const newUUIDPath = onfulfilled.object_path + newParentUUID
@@ -232,13 +231,14 @@ router.post("/", (req, res) => {
                                                                         })
                                                                     }
                                                                 })
-                                                        } else {
-                                                            res.status(406)
-                                                            res.json({
-                                                                status: false,
-                                                                path: "invalid"
-                                                            })
-                                                        }
+                                                        
+                                                    }
+                                                    if (onfulfilled == null) {
+                                                        res.status(406)
+                                                        res.json({
+                                                            status: false,
+                                                            path: "invalid"
+                                                        })   
                                                     }
                                                     if (onrejected) {
                                                         res.status(500)
@@ -283,7 +283,6 @@ router.post("/", (req, res) => {
                                     object_user_name: parentName
                                 }).then((onfulfilled, onrejected) => {
                                     if (onfulfilled) {
-                                        if (!onfulfilled.object_path.includes(uuid) || !onfulfilled.object_uuid == uuid) {
                                             console.log(onfulfilled)
                                             const newParentUUID = onfulfilled.object_uuid
                                             const newUUIDPath = onfulfilled.object_path + newParentUUID
@@ -390,13 +389,16 @@ router.post("/", (req, res) => {
                                                         })
                                                     }
                                                 })
-                                        } else {
-                                            res.status(406)
-                                            res.json({
-                                                status: false,
-                                                path: "invalid"
-                                            })
-                                        }
+                                        
+                                    }
+                                    if (onfulfilled == null) {
+                                    
+                                        res.status(406)
+                                        res.json({
+                                            status: false,
+                                            path: "invalid"
+                                        })
+                                    
                                     }
                                     if (onrejected) {
                                         res.status(500)
