@@ -1,5 +1,5 @@
 # The latest lts image of node
-FROM node:lts-alpine
+FROM node:latest
 
 # Creates the working directory
 WORKDIR /usr/src/app
@@ -9,6 +9,9 @@ COPY package*.json ./
 
 # Installs all needed dependencies
 RUN npm install
+
+# Rebuilds tfjs
+RUN npm run rebuild-tfjs
 
 # Copies the rest of the application to the working directory
 COPY . .
