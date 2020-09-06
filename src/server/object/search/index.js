@@ -1,7 +1,7 @@
 import express from 'express'
 import elastic from '@elastic/elasticsearch'
 import minioClient from '../../../minio/connection'
-const client = new elastic.Client({ node: 'http://88.99.35.174:9200' })
+const client = new elastic.Client({ node: process.env.ELASTIC_URL })
 const router = express.Router()
 
 router.post( "/", (req, res) => {
