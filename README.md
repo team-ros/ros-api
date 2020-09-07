@@ -9,3 +9,4 @@ The API of ROS-Cloud
 - S3_ACCESS_KEY ... (String) The access key of S3
 - S3_SECRET_KEY ... (String) The secret key of S3
 - ELASTIC_URL ... (String) The url of the elasticsearch server
+- GOOGLE_APPLICATION_CREDENTIALS ... (String) The path to the firebase configuration file
