@@ -30,7 +30,7 @@ router.post("/", (req, res) => {
                                     if (onfulfilled.length == 0) { //new name is available
                                         if (oldUserPath == req.body.Path) { //object is not getting moved
                                             console.log("if")
-                                            let check = new RegExp("^(/[^/ ]*)+/?$")
+                                            let check = new RegExp(/^(\/[^\/ ]*)+\/?$/)
                                             if (check.test(req.body.Path)) { //check if sent path is valid
                                                 object.updateOne({ //update the main object
                                                     object_uuid: req.body.Object_ID
@@ -102,7 +102,7 @@ router.post("/", (req, res) => {
                                                     })
                                             }
                                         } else { //object is getting moved and renamed
-                                            let check = new RegExp("^(/[^/ ]*)+/?$")
+                                            let check = new RegExp(/^(\/[^\/ ]*)+\/?$/)
                                             if (check.test(req.body.Path)) { //check if sent path is valid
                                                 const newPath = req.body.Path
                                                 let parentPath = newPath
@@ -261,7 +261,7 @@ router.post("/", (req, res) => {
                                 }
                             })
                         } else {
-                            let check = new RegExp("^(/[^/ ]*)+/?$")
+                            let check = new RegExp(/^(\/[^\/ ]*)+\/?$/)
                             if (check.test(req.body.Path)) { //check if sent path is valid
                                 const newPath = req.body.Path
                                 let parentPath = newPath
