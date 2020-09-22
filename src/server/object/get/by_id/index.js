@@ -21,6 +21,12 @@ router.post( "/", (req, res) => {
                             minioClient.presignedUrl('GET', String(req.auth.uid).toLowerCase(), req.body.Object_ID, 3600, (err, presignedUrl) => {
                                 if (err) return console.log(err)
                                 console.log(presignedUrl)
+                                if (presignedUrl) {
+                                    res.json({
+                                        status: true,
+                                        data: presignedUrl
+                                    })
+                                }
                               })
                             // minioClient.fGetObject(String(req.auth.uid).toLowerCase(), onfulfilled.object_uuid, `/tmp/${onfulfilled.object_uuid}/${onfulfilled.object_user_name}`, (err) => {
                             //     if (err) {
