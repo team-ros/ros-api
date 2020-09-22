@@ -51,46 +51,49 @@ router.post("/*", (req, res) => {
                         console.log(splittedPath)
                         console.log("parentName", parentName)
 
+                        splittedPath.splice(-2, 2)
+                        splittedPath.length == 1 ? splittedPath = "/" : splittedPath = splittedPath.join("/") + "/"
 
+                        console.log(splittedPath)
                         object.findOne({
-                            owner_uid: req.auth.uid,
+                            type: true,
                             object_user_name: parentName,
-                            type: true
+                            object_user_path: splittedPath,
+                            owner_uid: req.auth.uid
                         }).then((onfulfilled, onrejected) => {
+                            if (onfulfilled == null) {
+                                res.status(406)
+                                res.json({
+                                    status: false,
+                                    parent: "not existing"
+                                })
+                            }
                             if (onfulfilled) {
                                 console.log(onfulfilled)
-                                if (onfulfilled == null) {
-                                    res.status(406)
-                                    res.json({
-                                        status: false,
-                                        parent: "not existing"
-                                    })
-                                } else {
-                                    object.create({
-                                        type: true,
-                                        object_uuid: objectName,
-                                        object_path: onfulfilled.object_path + onfulfilled.object_uuid + "/",
-                                        object_user_path: req._parsedUrl.path,
-                                        object_user_name: req.body.folderName,
-                                        owner_uid: result.uid,
-                                        parent_id: onfulfilled.object_uuid
-                                    }).then((onfulfilled, onrejected) => {
-                                        if (onfulfilled) {
-                                            res.json({
-                                                status: true,
-                                                directory: true,
-                                                debug: objectName
-                                            })
-                                        }
-                                        if (onrejected) {
-                                            res.status(500)
-                                            res.json({
-                                                status: false,
-                                                directory: false
-                                            })
-                                        }
-                                    })
-                                }
+                                object.create({
+                                    type: true,
+                                    object_uuid: objectName,
+                                    object_path: onfulfilled.object_path + onfulfilled.object_uuid + "/",
+                                    object_user_path: req._parsedUrl.path,
+                                    object_user_name: req.body.folderName,
+                                    owner_uid: result.uid,
+                                    parent_id: onfulfilled.object_uuid
+                                }).then((onfulfilled, onrejected) => {
+                                    if (onfulfilled) {
+                                        res.json({
+                                            status: true,
+                                            directory: true,
+                                            debug: objectName
+                                        })
+                                    }
+                                    if (onrejected) {
+                                        res.status(500)
+                                        res.json({
+                                            status: false,
+                                            directory: false
+                                        })
+                                    }
+                                })
                             }
                             if (onrejected) {
                                 res.status(500)
@@ -99,6 +102,7 @@ router.post("/*", (req, res) => {
                                     directory: false
                                 })
                             }
+                            console.log(onfulfilled)
                         })
                     }
                 } else {
