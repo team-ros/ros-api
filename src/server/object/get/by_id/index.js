@@ -56,12 +56,20 @@ router.post( "/", (req, res) => {
                     }
                 }
                 if (onrejected) {
-
+                    res.status(404)
+                    res.json({
+                        status: false,
+                        user: "not found"
+                    })
                 }
             })
         }
         if (onrejected) {
-
+            res.status(404)
+            res.json({
+                status: false,
+                user: "not found"
+            })
         }
     })
 })
